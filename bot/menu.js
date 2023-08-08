@@ -16,7 +16,7 @@ global.help = {
     ┆± .Topbalance
     ┆± .Toplayanan
     ╰──────────◇
-    
+    gestun
     ╔━━━━『 *_Main Menu_* 』━━━
     ┃• .Simi ( Ngobrol Sama Simi )
     ┃• .Help ( Lihat Menu )
@@ -32,6 +32,7 @@ global.help = {
     ┃• .Menu ( Lihat List Menu )
     ┃• .Cekid ( Info Layanan SMM)
     ┃• .Cekstatus  ( Status Order SMM )
+    ┃• .Getstatus ( Status order topup )
     ┃• .Deposit ( Untuk Isi Ulang Saldo )
     ┃• .Panel_Bot  ( List Panel Bot )
     ┃• .Smm  ( Menampilkan Layanan SMM )
@@ -46,7 +47,7 @@ global.help = {
     ┃• .Kenon
     ┃• .Verif@
     ┃• .Openai
-    ┃• .Retasgc
+    ┃• .remini
     ┃• .Cekprem 
     ┃• .Listprem
     ┃• .Spamcall
@@ -188,22 +189,42 @@ global.help = {
     ┃•  .delsetwelcome
     ┃•  .changewelcome
     ╚━━━━━━━━━━━━━━━ •◇
-    
+
+    ╭✄┈┈┈⟬ *RATE* ⟭
+    ┃•  .soc
+    ┃•  .aov
+    ┃•  .valo
+    ┃•  .kios
+    ┃•  .socl
+    ┃•  .codm
+    ┃•  .kachi
+    ┃•  .unimy
+    ┃•  .uniph
+    ┃•  .unibrl
+    ┃•  .undawn
+    ┃•  .unicodm
+    ┃•  .aceracer
+    ┃•  .genshinmy
+    ┃•  .genshinph
+    ╚━━━━━━━━━━━━━━━ •◇
+
     ⟬OWNER menu⟭
-    cekakun
-    updateprofit
-    updatesmm
-    updatepasca
-    cekorang
-    addblnc
-    lessblnc
+    profit
+
     leave
-    addsewa
-    delsewa
-    listusr
-    listsrv
+    kenon
     addusr
     addsrv
-    kenon`
+    listsrv
+    listusr
+    addsewa
+    delsewa
+    cekakun
+    addblnc
+    lessblnc
+    cekorang
+    updatesmm
+    updateproduk
+    updateprofit`
     }
     }

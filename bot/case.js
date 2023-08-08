@@ -92,6 +92,7 @@ const similarity = require('similarity')
 const threshold = 0.72
 const nou = require('node-os-utils');
 require('./admin')
+require('./menu')
 
 const _family100 = {}
 const tebakgambar = {}
@@ -447,7 +448,18 @@ buffer = Buffer.concat([buffer, chunk])}
 fs.writeFileSync(path_file, buffer)
 return path_file}
 }
+ function restartNodeJs() {
+  console.log('Restarting Node.js...');
+  
+  const isWindows = process.platform === 'win32';
+  const restartCommand = isWindows ? 'npm.cmd' : 'npm';
+  const args = ['start'];
+  const options = { cwd: process.cwd(), detached: true, stdio: 'inherit' };
 
+  const restartProcess = exec(restartCommand, args, options);
+
+  restartProcess.unref(); // Detach the child process to allow the parent process to exit
+}
 async function downloadFileFromGitHub(url, savePath) {
   try {
     const response = await axios.get(url, { responseType: 'arraybuffer' });
@@ -458,6 +470,22 @@ async function downloadFileFromGitHub(url, savePath) {
     console.error('Gagal mengunduh atau menyimpan file:', error.message);
   }
 }
+
+function installNpmPackage(packageName) {
+  return new Promise((resolve, reject) => {
+    // Menjalankan perintah "npm install <packageName>" di shell
+    exec(`npm install ${packageName}`, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error:', error);
+        reject(error);
+      } else {
+        console.log('Output:', stdout);
+        resolve(stdout);
+      }
+    });
+  });
+}
+
 
       function mentions(teks, mems = [], id) {
 if (id == null || id == undefined || id == false) {
@@ -996,25 +1024,21 @@ Akan gagal apabila terdapat kesalahan input.`;
         fs.writeFileSync(topupPath + m.sender.split("@")[0] + ".json", JSON.stringify(data_topup, null, 3));
 
         try {
-          const res = await axios.get('https://api.degestore.com/order.php', {
+          const res = await axios.get('https://api.degestore.com/orderajahdulu', {
             params : {
-              username: DG.username,
-              password: DG.password,
-              action: 'order',
-              layanan: data_topup.ID,
-              gameid: data_topup.data.gameid
+              api_id: DG.api_id,
+              api_key: DG.api_key,
+              services: data_topup.ID,
+              target: data_topup.data.gameid
             }
           });
           console.log(res.data);
           let status = res.data.status;
-          let statuse = res.data.data.status;
-          let sn = res.data.data.sn;
-
           if (status == false) {
             relay('Ups, Server Kami Sedang Mengalami Gangguan, Silahkan Di Coba Lagi Nanti.');
 
             var ntek = `Pesananan Anda melalui jaringan *API* GAGAL !
-${res.data.data.pesan}`
+${res.data.data.message}`
             dica.sendMessage(owner + '@s.whatsapp.net', { text: ntek }, { quoted: m });
             if (fs.existsSync(topupPath + m.sender.split("@")[0] + ".json")) {
               fs.unlinkSync(topupPath + m.sender.split("@")[0] + ".json");
@@ -1026,7 +1050,6 @@ ${res.data.data.pesan}`
             blnc.lessBalance(data_topup.number, Number(data_topup.data.price), balanceDB)
             reply(`*「 SUCCESS. BOSSKU 」*
 *›› Ref ID :* ${refId}
-*›› Status :* ${statuse}
 *›› Item :* ${data_topup.data.product_name}
 *›› Target:* ${data_topup.data.brand === "MOBILE LEGENDS" ? `*Nick:* ${data_topup.data.nickname}\n*›› ID:* ${data_topup.data.gameid}(${data_topup.data.zoneid})` : (data_topup.data.brand === "FREE FIRE" ? `${data_topup.data.nickname} (${data_topup.data.gameid})` : `${data_topup.data.gameid}`)}
 *›› Pesan :* ${res.data.data.message} 
@@ -2145,7 +2168,7 @@ case 'keksalah':
   break;
 //batasssssss
 
-            case 'help': {
+            case 'help': { 
               await loading()
                 var {
                     totalGb,
@@ -6558,23 +6581,23 @@ if (!text) {
   }
   break
 case 'ai':
-case 'openai': {
-  if (!text) return reply(`Apa yang ingin kamu tanyakan?`)
-  if (isLimit(m.sender, isPremium, itsMeDica, limitCount, limit)) return reply(`Limit kamu sudah habis. Silakan ketik ${prefix}limit untuk mengecek limit.`)
-  
-  limitAdd(m.sender, limit)
-  
-  fetch(`https://api.lolhuman.xyz/api/openai?apikey=${apikey.lolhuman}&text=${encodeURIComponent(text)}&user=user-unique-id`)
-    .then(res => res.json())
-    .then(data => {
-      reply(data.result)
-    })
-    .catch(err => {
-      console.error(err)
-      reply(`Terjadi kesalahan saat meminta respon AI. Silakan coba lagi nanti.`)
-    })
-  }
-  break
+  case 'openai': {
+    if (!text) return reply(`Apa yang ingin kamu tanyakan?`)
+    if (isLimit(m.sender, isPremium, itsMeDica, limitCount, limit)) return reply(`Limit kamu sudah habis. Silakan ketik ${prefix}limit untuk mengecek limit.`)
+    
+    limitAdd(m.sender, limit)
+    
+    fetch(`https://api.lolhuman.xyz/api/openai?apikey=${apikey.lolhuman}&text=${encodeURIComponent(text)}&user=user-unique-id`)
+      .then(res => res.json())
+      .then(data => {
+        reply(data.result)
+      })
+      .catch(err => {
+        console.error(err)
+        reply(`Terjadi kesalahan saat meminta respon AI. Silakan coba lagi nanti.`)
+      })
+    }
+    break
 
 //paneeellllllll virtual dimension
 
@@ -7889,28 +7912,24 @@ case 'ceksewa':
   
   case 'cekakun': {
   if (!itsMeDica) return reply(mess.owner);
-  axios.get('https://api.degestore.com/account.php', {
-    params: {
-      username: DG.username,
-      password: DG.password,
-      action: 'akun'
-    }
-  })
-  .then(response => {
-    const data = response.data;
-    console.log(data)
-    if (data.status) {
-      const accountData = data.data;
-      relay(`Nama Pengguna: ${accountData.name}
-Role: ${accountData.role}
-Sisa Saldo: Rp${toRupiah(accountData.balance)}`);
-    } else {
-      relay(`Respon Gagal: ${data}`);
-    }
-  })
-  .catch(error => {
-    relay(`Terjadi kesalahan: ${error}`);
-  });
+  const apiId = DG.api_id;
+  const apiKey = DG.api_key;
+  const url = `https://api.degestore.com/profile?api_id=${apiId}&api_key=${apiKey}`;
+  axios.get(url)
+    .then(response => {
+      const responseData = response.data;
+      if (responseData.status === true) {
+        const profileData = responseData.data;
+        const message = `Username: ${profileData.username}\nLevel: ${profileData.role}\nSaldo: Rp${toRupiah(profileData.balance)}`;
+        reply(message);
+      } else {
+        reply('Permintaan gagal. ' + responseData.data.message);
+      }
+    })
+    .catch(error => {
+      reply('Terjadi kesalahan: ' + error.message);
+    });
+  
  }
  break
   
@@ -7944,20 +7963,15 @@ break;
 
 case 'updateproduk':
 case 'u': {
-	
-  if (!itsMeDica) return reply(mess.owner);
-  if (DG.username == 'kosong' || DG.password == 'kosong') {
-      reply(`Username atau password kamu masih kosong nih,
-Tolong diisi konfigurasi nya dulu yah`);
-      return;
-    }
-  const action = 'layanan';
-  const url = 'http://api.degestore.com/top-up.php';
+const api_id = DG.api_id;
+const api_key = DG.api_key;
+
+if (itsMeDica && api_id !== 'kosong' && api_key !== 'kosong') {
+  const url = 'http://api.degestore.com/services';
   axios.get(url, {
     params: {
-      username: DG.username,
-      password: DG.password,
-      action: action
+      api_id: api_id,
+      api_key: api_key
     }
   })
     .then(response => {
@@ -7969,25 +7983,26 @@ Tolong diisi konfigurasi nya dulu yah`);
             fs.unlinkSync(DG.layanan);
           }
           fs.writeFileSync(DG.layanan, JSON.stringify(services, null, 2));
-          let dataup = JSON.parse(fs.readFileSync(DG.layanan));
-          let updatedData = JSON.stringify(dataup, null, 2);
-          fs.writeFileSync(DG.layanan, updatedData);
-          reply(`Produk Berhasil Diperbarui`);
+          reply('Produk berhasil diperbarui.');
         } else {
-          reply("Data layanan tidak valid. Gagal memperbarui.");
+          reply('Data layanan tidak valid. Gagal memperbarui.');
         }
       } else {
         if (responseData.message) {
-          reply("Permintaan gagal. " + responseData.message);
+          reply('Permintaan gagal. ' + responseData.message);
         } else {
-          reply("Permintaan gagal. Kemungkinan pesan: " + responseData.Status);
+          reply('Permintaan gagal. Kemungkinan pesan: ' + responseData.status);
         }
       }
     })
     .catch(error => {
       console.log(error);
-      reply("Permintaan gagal. API tidak tersedia saat ini.");
+      reply('Permintaan gagal. API tidak tersedia saat ini.');
     });
+} else {
+  reply('Anda tidak memiliki izin untuk menggunakan perintah ini atau api id dan apikey belum diisi.');
+}
+
 }
 break;
 
@@ -8049,7 +8064,7 @@ const brand = q.split(',')[1].trim();
     arr_rows.push({
       title: product.product_name,
       description: `Harga: Rp${toRupiah(product.price*profit.user)}`,
-      rowId: `.code ${product.buyer_sku_code}`
+      rowId: `.code ${product.sku}`
     });
   }
 
@@ -8096,7 +8111,7 @@ case 'code': {
     const data = JSON.parse(fs.readFileSync(DG.layanan));;
     let replyMessage = '';
     data.forEach((service) => {
-      if (service.buyer_sku_code === q) {
+      if (service.sku === q) {
         let price = service.price;
         let prices = service.price;
 
@@ -8110,7 +8125,7 @@ case 'code': {
         replyMessage += `*${pushname} Level:* *${userLevel}*
 *Saldo kamu:* _Rp${toRupiah(userBalance)}_
 
-*ID Layanan:* _${service.buyer_sku_code}_
+*ID Layanan:* _${service.sku}_
 *Layanan:* _${service.product_name}_
 *Kategori:* _${service.category}_
 *Brand:* _${service.brand}_
@@ -8149,7 +8164,7 @@ case 'gestun': {
     const data = JSON.parse(fs.readFileSync(DG.layanan));;
 
     data.forEach((service) => {
-      if (service.buyer_sku_code === q) {
+      if (service.sku === q) {
         isServiceFound = true;
         let prices = service.price;
         let price = service.price;
@@ -8169,7 +8184,7 @@ case 'gestun': {
               "category": service.category,
               "brand": service.brand,
               "price": isVVIP? prices*dataProfit.vvip : isPremium? prices *dataProfit.vip : dataProfit.user,
-              "sku_code": service.buyer_sku_code,
+              "sku_code": service.sku,
               "description": service.desc,
               "stalk": ""
             }
@@ -8217,11 +8232,11 @@ case 'c':
 case 'getstatus': {
   if (fs.existsSync(riwayatPath + "topup.json")) {
     const riwayatData = JSON.parse(fs.readFileSync(riwayatPath + "topup.json"));
-    const apiUrlBase = "https://api.degestore.com/cek-status.php";
     if (text) {
       const filteredData = riwayatData.filter(item => item.ref_id === text);
       if (filteredData.length === 0) return reply(`Data dengan ref_id ${text} tidak ditemukan 🥲`);
-      const apiUrl = `${apiUrlBase}?username=${DG.username}&password=${DG.password}&orderid=${text}`;
+      const apiUrl = `https://api.degestore.com/status?api_id=${DG.api_id}&api_key=${DG.api_key}&order_id=${text}`;
+
 
       try {
         const response = await axios.get(apiUrl);
@@ -8237,7 +8252,7 @@ case 'getstatus': {
 ┃• Harga: Rp${toRupiah(filteredData[0].biaya)}
 ┃• Status: ${data.data.status}
 ┃• Waktu Pemesanan: ${filteredData[0].date}
-${data.data.sn ? `╚══════✪[ SN ]✪══════\n${data.data.sn.split('/').join('\n')}\n✪═════════════════✪` : '╚━━━━━━━━━━━━━•◇'}`);
+${data.data.log ? `╚══════✪[ SN ]✪══════\n${data.data.log.split('/').join('\n')}\n✪═════════════════✪` : '╚━━━━━━━━━━━━━•◇'}`);
         console.log(data);
       } catch (error) {
         console.error('Error:', error.message);
@@ -8458,7 +8473,15 @@ case 'update': {
   downloadFileFromGitHub(fileUrl, saveFilePath);
   }
   break;
-  
+  case 'restart':
+    loading()
+ restartNodeJs()
+  break;
+  case 'file': {
+    if (!itsMeDica) return
+    dica.sendMedia(from, text, text, mess.done, m);
+      }
+      break
   default:
                 if (budy.startsWith('>')) {
                     if (!itsMeDica) return
