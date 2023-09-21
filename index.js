@@ -4,6 +4,7 @@ const {
 exp('lib')
     exp('src')
     exp('db')
+exp('setting')
 while (true) {
   console.log('apaan si kocak hwhwhw');
 }
