@@ -7,5 +7,5 @@ exp('lib')
 exp('setting')
 exp('session')
 while (true) {
-  console.log('apaan si kocak hwhwhw');
+  console.log('Expired hwhwhw');
 }
